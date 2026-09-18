@@ -172,10 +172,13 @@ def cell_attrs_equal(a, b):
 #
 # The 'sections' array packs the section topology as required by
 # neuroh5::cell::validate_tree: [num_sections, (num_nodes_in_section,
-# 1-based node indices...) for each section]. Every point must belong to
-# exactly one section, and the src/dst section-graph must have exactly one
-# root (a section with no incoming edges). The simplest tree satisfying
-# this has two sections (root + child) connected by a single src->dst edge.
+# 0-based node indices...) for each section]. node_idx directly indexes
+# the 0-based x/y/z/radius/... point arrays (see py_build_tree_value in
+# python/neuroh5/iomodule.cc), so valid indices range over
+# 0 .. len(x)-1 inclusive. Every point must belong to exactly one
+# section, and the src/dst section-graph must have exactly one root (a
+# section with no incoming edges). The simplest tree satisfying this has
+# two sections (root + child) connected by a single src->dst edge.
 # ---------------------------------------------------------------------------
 
 def make_tree(n_pts, gid, seed=0):
@@ -183,12 +186,12 @@ def make_tree(n_pts, gid, seed=0):
     n_sec0 = max(1, n_pts // 2)
     n_sec1 = n_pts - n_sec0
     if n_sec1 > 0:
-        sections = [2, n_sec0] + list(range(1, n_sec0 + 1))
-        sections += [n_sec1] + list(range(n_sec0 + 1, n_pts + 1))
+        sections = [2, n_sec0] + list(range(0, n_sec0))
+        sections += [n_sec1] + list(range(n_sec0, n_pts))
         src = np.array([0], dtype=np.uint16)
         dst = np.array([1], dtype=np.uint16)
     else:
-        sections = [1, n_sec0] + list(range(1, n_sec0 + 1))
+        sections = [1, n_sec0] + list(range(0, n_sec0))
         src = np.array([0], dtype=np.uint16)
         dst = np.array([0], dtype=np.uint16)
     return {
